@@ -1,0 +1,799 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Our Digital Scrapbook</title>
+<link href="https://fonts.googleapis.com/css2?family=Cherry+Cream+Soda&family=Caveat:wght@500;700&family=Pinyon+Script&display=swap" rel="stylesheet">
+<style>
+/* Drop your font files into /fonts with these names (.ttf, .otf or .woff2) */
+@font-face{font-family:'Pretty Please';src:local('Pretty Please'),url('fonts/PrettyPlease.woff2') format('woff2'),url('fonts/PrettyPlease.ttf') format('truetype'),url('fonts/PrettyPlease.otf') format('opentype')}
+@font-face{font-family:'Pony Club';src:local('Pony Club'),url('fonts/PonyClub.woff2') format('woff2'),url('fonts/PonyClub.ttf') format('truetype'),url('fonts/PonyClub.otf') format('opentype')}
+@font-face{font-family:'Hatter';src:local('Hatter'),url('fonts/Hatter.woff2') format('woff2'),url('fonts/Hatter.ttf') format('truetype'),url('fonts/Hatter.otf') format('opentype')}
+@font-face{font-family:'Sweet Dreams';src:local('Sweet Dreams'),url('fonts/SweetDreams.woff2') format('woff2'),url('fonts/SweetDreams.ttf') format('truetype'),url('fonts/SweetDreams.otf') format('opentype')}
+*{box-sizing:border-box}
+:root{--fancy:'Pinyon Script',cursive;--title:'Pretty Please','Cherry Cream Soda',cursive;--script:'Pony Club','Caveat',cursive;--section:'Hatter','Sweet Dreams','Cherry Cream Soda',cursive}
+html,body{margin:0;height:100%;overflow:hidden}
+body{background:#1b1b2e;font-family:var(--title);color:#fff}
+
+/* ---- full-screen book ---- */
+#book{position:fixed;inset:0;display:flex}
+.inner{position:absolute;top:0;right:0;bottom:0}
+.page{position:relative;width:50%;height:100%;overflow:hidden;background:var(--bg)}
+/* paper grain over every page */
+.page::before{content:"";position:absolute;inset:0;pointer-events:none;mix-blend-mode:multiply;opacity:.55;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .45 0 0 0 0 .38 0 0 0 0 .3 0 0 0 .22 0'/%3E%3C/filter%3E%3Crect width='220' height='220' filter='url(%23n)'/%3E%3C/svg%3E")}
+/* a strip of contrasting paper along the spine, like a layered scrapbook page */
+.band{position:absolute;top:0;bottom:0;width:11%;background:var(--band);box-shadow:0 0 10px #0003}
+.page.left .band{right:0}.page.right .band{left:0}
+.band::after{content:"";position:absolute;top:0;bottom:0;border-left:2px dashed #ffffffd0}
+.page.left .band::after{left:9px}.page.right .band::after{right:9px}
+.band::before{content:"";position:absolute;top:0;bottom:0;width:7px;background:repeating-linear-gradient(180deg,#fff 0 6px,transparent 6px 12px);opacity:.55}
+.page.left .band::before{left:-3px}.page.right .band::before{right:-3px}
+.page.left{box-shadow:inset -22px 0 28px -16px #0007}
+.page.right{box-shadow:inset 22px 0 28px -16px #0007}
+.title{position:absolute;left:6%;top:3%;font-family:var(--section);font-size:clamp(24px,4.2vw,60px);color:#fff;text-shadow:2px 3px 0 var(--accent);z-index:6;white-space:nowrap}
+.date{position:absolute;right:5%;top:4.5%;font-family:var(--script);font-size:clamp(12px,1.6vw,22px);color:var(--ink);background:#ffffffd0;padding:2px 12px;border-radius:20px;z-index:6}
+.fs{position:absolute}
+.fs .ph{position:absolute;z-index:3;background:#e9e4dc center/cover;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;color:var(--ink);font:600 clamp(8px,1vw,13px) sans-serif;text-align:center;overflow:hidden}
+.fs .ph:hover{filter:brightness(1.05)}
+.fs.mat .ph{box-shadow:0 3px 8px #0004;border:5px solid #fff;border-bottom-width:14px}
+.fs .fr{position:absolute;inset:0;width:100%;height:100%;z-index:2;pointer-events:none;filter:drop-shadow(0 3px 5px #0004)}
+.fs:not(.mat) .fr{z-index:4}
+.ph .ic{width:30px;height:30px;border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center;font-size:16px;margin-bottom:3px}
+.ph small{font-weight:400;opacity:.7}
+.ph.has *{display:none}.ph.has{color:transparent}
+.ph.has::after{content:"✕";display:none;position:absolute;top:6px;right:6px;background:#000a;color:#fff;border-radius:50%;width:22px;height:22px;line-height:22px;font-size:11px;text-align:center}
+.ph.up:hover::after{display:block}
+.paper{position:absolute;z-index:5}.paper>img{position:absolute;inset:0;width:100%;height:100%;filter:drop-shadow(0 3px 6px #0004)}
+.note{position:absolute;font-family:Caveat,cursive;font-size:clamp(14px,1.7vw,24px);color:#2b2b3a;overflow:auto;line-height:1.2;white-space:pre-line}
+/* introduction spread: dark wine pinstripe, lace heart photo, white calligraphy */
+.intro{--ink:#f6dbe3;--accent:#c2446b;--lace:#fff8f4}
+.intro .big{position:absolute;z-index:8;left:3%;top:64%;font:clamp(40px,6.2vw,108px)/.9 var(--fancy);white-space:pre;color:#fff;transform:rotate(-7deg);transform-origin:left;text-shadow:0 0 14px #ff9ec0aa,2px 3px 0 #5a0f22;pointer-events:none}
+.intro .sub{position:absolute;z-index:8;left:63%;top:41%;font:clamp(26px,3.4vw,58px)/1 var(--fancy);color:#fff;white-space:pre;transform:rotate(-9deg);text-shadow:0 0 10px #ff9ec0aa,2px 2px 0 #5a0f22;pointer-events:none}
+.intro .dates{position:absolute;z-index:8;left:50%;bottom:7%;transform:translateX(-50%);font:clamp(14px,1.6vw,22px) var(--script);color:#ffd6e3;background:#1e0409b0;border:1px solid #ffffff40;padding:4px 18px;border-radius:30px;white-space:nowrap}
+.intro .title{font-family:var(--fancy);font-size:clamp(34px,5vw,80px);top:1.5%;text-shadow:0 0 14px #ff9ec0aa,2px 3px 0 #5a0f22}
+.intro .card{position:absolute;z-index:2;left:6%;top:17%;width:46%;height:72%;transform:rotate(-1.5deg);filter:drop-shadow(0 10px 18px #0009)}
+/* lace edge: a ring of scallops just outside the card, plus a row of punched holes inside it */
+.intro .card::before{content:"";position:absolute;inset:-9px;z-index:-2;border-radius:6px;background:radial-gradient(circle,var(--lace) 6.5px,transparent 7px) -1px -1px/18px 18px}
+.intro .card::after{content:"";position:absolute;inset:0;z-index:-1;background:#fbf1ec;border-radius:3px;outline:2px dotted #d9a7b6;outline-offset:-9px;pointer-events:none}
+.intro .card .note{left:9%;top:7%;width:82%;height:86%;font-size:clamp(16px,2vw,28px);line-height:1.35;color:#4a1626}
+.heart{position:absolute;z-index:4}
+.heart svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible;filter:drop-shadow(0 8px 16px #000a)}
+.heart .ph{position:absolute;inset:0;background-color:#d9cfd2;-webkit-mask:var(--m) center/100% 100% no-repeat;mask:var(--m) center/100% 100% no-repeat}
+.snap{position:absolute;z-index:6;background:#fff;box-shadow:0 6px 14px #000a}
+.snap .ph{left:6%;right:6%;top:5%;bottom:17%;background-color:#ddd}
+/* black & white photos, like the reference; delete this rule to keep colour */
+.intro .ph.has{filter:grayscale(1) contrast(1.06)}
+/* conclusion + back cover: same dark style as the introduction, photos in colour */
+.outro .ph.has{filter:none}
+.outro .card .note{left:9%;top:13%;width:82%;height:76%;font-size:clamp(12px,1.35vw,20px);line-height:1.3}
+.snap.tape::before{content:"";position:absolute;z-index:5;left:30%;top:-4%;width:40%;height:8%;background:#f3a3bdb8;transform:rotate(-4deg);box-shadow:0 1px 2px #0003}
+.snap.slip{background:transparent}.snap.slip .ph{inset:0}
+.outro .end{position:absolute;z-index:8;left:0;right:0;top:62%;text-align:center;font:clamp(48px,7vw,120px)/1 var(--fancy);color:#fff;transform:rotate(-5deg);text-shadow:0 0 14px #ff9ec0aa,2px 3px 0 #5a0f22;pointer-events:none}
+.outro .endsub{position:absolute;z-index:8;left:0;right:0;top:79%;text-align:center;font:clamp(22px,2.6vw,42px)/1 var(--fancy);color:#ffd6e3;transform:rotate(-3deg);text-shadow:2px 2px 0 #5a0f22;pointer-events:none}
+.badge{position:absolute;z-index:8;pointer-events:none;filter:drop-shadow(0 4px 8px #0008)}
+.badge svg{width:100%;height:100%;overflow:visible}
+.sticker{position:absolute;filter:drop-shadow(1px 2px 2px #0004);z-index:7}
+.sticker img{width:100%;height:100%;display:block;pointer-events:none}
+/* anything movable: stickers, frames, photostrip */
+.mv{cursor:grab;touch-action:none;user-select:none}
+.mv:active{cursor:grabbing}
+.mv.sel{outline:2px dashed #ffffffcc;outline-offset:3px;z-index:9}
+.mv .rot,.mv .del{display:none;position:absolute;top:-30px;width:24px;height:24px;margin-left:-12px;border-radius:50%;background:#fff;color:#333;box-shadow:0 1px 4px #0006;font:15px/24px sans-serif;text-align:center;z-index:10}
+.mv .rot{left:50%;cursor:alias}
+.mv .del{left:calc(50% + 30px);cursor:pointer;color:#c33}
+.mv.sel .rot,.mv.sel .del{display:block}
+.fs.mv .ph{cursor:pointer}
+/* photostrip on the introduction page */
+.strip .ph{border-radius:2px}
+/* sticker drawer */
+#addSt{position:fixed;right:16px;bottom:14px;z-index:20;background:#1b1b2ecc;color:#fff;border:0;border-radius:30px;padding:10px 16px;font:15px var(--title);cursor:pointer;backdrop-filter:blur(4px)}
+#tray{position:fixed;right:16px;bottom:64px;z-index:40;width:min(420px,90vw);max-height:70vh;overflow:auto;background:#fffdf8;border-radius:14px;box-shadow:0 10px 30px #0007;padding:12px;display:none;color:#333}
+#tray.open{display:block}
+#tray p{margin:0 0 8px;font:14px sans-serif;color:#555}
+#tray .grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
+#tray .grid img{width:100%;aspect-ratio:1;object-fit:contain;cursor:pointer;border-radius:8px;padding:4px;box-sizing:border-box;background:#f1ece4}
+#tray .grid img:hover,#tray .grid img.pick{outline:2px solid #6b7bd6}
+#tray button{font:14px sans-serif;border:0;border-radius:20px;padding:6px 14px;background:#6b7bd6;color:#fff;cursor:pointer;margin-bottom:10px}
+body.placing .page{cursor:copy}
+/* while an item is dragged it lives here, so it can cross the spine or ride along to another spread */
+#drag{position:fixed;inset:0;z-index:15;pointer-events:none}
+/* page turn: the old pages are laid over the new spread and one leaf swings over the spine */
+#turn{position:fixed;inset:0;z-index:10;pointer-events:none;perspective:2600px}
+#turn>.page,#turn .face{position:absolute;top:0;height:100%}
+#turn>.page{width:50%;z-index:0}
+#turn .under{z-index:1}#turn .leaf{z-index:2}#turn .face{z-index:0}
+#turn .leaf{position:absolute;top:0;width:50%;height:100%;transform-style:preserve-3d;will-change:transform}
+#turn .face{left:0;width:100%;backface-visibility:hidden;-webkit-backface-visibility:hidden}
+#turn .face.back{transform:rotateY(180deg)}
+#turn .shade{position:absolute;inset:0;pointer-events:none;z-index:50;opacity:0}
+#turn .front .shade{background:linear-gradient(var(--sd),#0000 40%,#0006)}
+#turn .back .shade{background:linear-gradient(var(--sd),#0006,#0000 60%)}
+#turn .under{position:absolute;top:0;width:50%;height:100%;pointer-events:none;background:#000;opacity:0}
+#drag>*{cursor:grabbing}
+.flip{position:fixed;top:0;bottom:0;width:46px;z-index:16;display:none;align-items:center;justify-content:center;font-size:26px;color:#fff;background:#1b1b2e55}
+body.dragging .flip{display:flex}
+.flip.on{background:#1b1b2eaa}
+#flipR{right:0}
+
+/* ---- overlay controls ---- */
+nav{position:fixed;left:50%;bottom:14px;transform:translateX(-50%);display:flex;align-items:center;gap:12px;z-index:20;background:#1b1b2ecc;padding:6px 12px;border-radius:30px;backdrop-filter:blur(4px)}
+nav button{background:transparent;color:#fff;border:1px solid #fff8;border-radius:50%;width:34px;height:34px;font-size:15px;cursor:pointer}
+nav button:disabled{opacity:.3;cursor:default}
+#count{font:15px var(--title);min-width:52px;text-align:center}
+
+/* ---- record player: always half hidden off the left edge; --s is its size ---- */
+#player{position:fixed;z-index:30;transition:left .5s ease;--s:100vh;left:calc(var(--s) * -0.5);width:calc(var(--s) * 1.02);height:var(--s);top:calc(50vh - var(--s) / 2)}
+
+#player.min{left:calc(var(--s) * -0.89)}
+/* the whole turntable is one vector drawing (built in JS), so it stays sharp at any size */
+#tt{position:absolute;inset:0;width:100%;height:100%;display:block;filter:drop-shadow(0 10px 24px #0009)}
+#platter{position:absolute;border-radius:50%;cursor:pointer;width:calc(var(--s) * .86);height:calc(var(--s) * .86);left:calc(var(--s) * .07);top:7%}
+#rec{transform-origin:500px 500px;animation:spin 1.8s linear infinite;animation-play-state:paused}
+#player.on #rec{animation-play-state:running}
+@keyframes spin{to{transform:rotate(360deg)}}
+/* tonearm: pivot at (930,140) in the drawing; drag it onto the record to play */
+#arm{transform-origin:930px 140px;transition:transform .8s ease}
+#arm.drag{transition:none}
+#ctrls{position:absolute;display:flex;flex-direction:column;gap:8px;z-index:2;right:1.8%;bottom:4%}
+#ctrls button{width:36px;height:36px;border-radius:50%;border:1px solid #2b3038;background:radial-gradient(circle at 35% 30%,#fafafa,#b9bec6 60%,#8b919a);color:#2b3038;font-size:14px;cursor:pointer;box-shadow:0 2px 5px #0008,inset 0 -2px 3px #0003}
+#now{position:absolute;font:500 clamp(14px,1.4vw,20px) var(--script);color:#e8ecf2;text-shadow:0 1px 2px #0008;right:2.6%;bottom:calc(4% + 140px);writing-mode:vertical-rl;transform:rotate(180deg);white-space:nowrap}
+#player.min #now{display:none}.note-p{position:fixed;z-index:31;pointer-events:none;color:#fff;text-shadow:0 0 8px #ffd0e8;animation:floatUp var(--d) ease-out forwards}
+@keyframes floatUp{0%{opacity:0;transform:translate(0,0) rotate(0) scale(.6)}15%{opacity:1}100%{opacity:0;transform:translate(var(--dx),var(--dy)) rotate(var(--r)) scale(1.2)}}
+</style>
+</head>
+<body>
+<div id="book"><div class="page left" id="L"></div><div class="page right" id="R"></div></div>
+
+<div id="player" class="min">
+  <svg id="tt" viewBox="0 0 1020 1000" aria-hidden="true"></svg>
+  <div id="platter" title="Play / pause"></div>
+  <div id="now">♪ move the arm onto the record to play</div>
+  <div id="ctrls">
+    <button id="pp" title="Play / pause">▶</button>
+    <button id="skip" title="Next song">⏭</button>
+    <button id="size" title="Maximize / minimize">⤢</button>
+  </div>
+</div>
+
+<nav><button id="prev">←</button><span id="count"></span><button id="next">→</button></nav>
+<button id="addSt" title="Add a sticker">＋ sticker</button>
+<div id="drag"></div><div class="flip" id="flipL">‹</div><div class="flip" id="flipR">›</div>
+<div id="tray">
+  <button id="upSt">Upload your own sticker</button>
+  <p>Pick a sticker, then click on the page where it should go.</p>
+  <div class="grid"></div>
+</div>
+<input type="file" id="stFile" accept="image/*" hidden>
+<input type="file" id="file" accept="image/*" hidden>
+<script src="assets/manifest.js"></script>
+<script src="assets/photos.js"></script>
+<script>
+/* =====================================================================
+   EDIT YOUR WORDS HERE. Everything written in the book comes from this block.
+   Use \n inside the quotes for a new line.
+   ===================================================================== */
+const TEXT={
+  coverTitle:'    dan n \n     sean',
+  coverSub:'six months\n  of us',
+  badge:'6',                      // the pink star on the introduction page
+  coverDates:'May 28 → Nov 28',
+  introTitle:'introduction',
+  intro:'HAPPY SIX MONTHS BABUUU \n\n i know we cant meet right now since may sakit ka pa \n \n but i still wanted to give you something for our monthsarry \n \n di ako masulat or sentimental type of person pagdating sa gift, \n \n but i wanted to try it as well since alam k nagwwrite ka rin ng letter',
+  months:[
+    {title:'month one',   dates:'May 28 → Jun 28', note:'here, sobrang dami kong first HAHAHAHAH and super parin yugn run ng may 27 - june 1'},
+    {title:'month two',   dates:'Jun 28 → Jul 28', note:'omg naalala ko nung yaoi na yaoi si ate sa photobooth dahil saten.. yung photostrip natin nasa journal ko na'},
+    {title:'month three', dates:'Jul 28 → Aug 28', note:'ugh nung wala pang 2nd year. I MISS MLBB. babu i want bonchon.'},
+    {title:'month four',  dates:'Aug 28 → Sep 28', note:'then nagstart na yung 2nd year, and u were struck with the sickness. todo aral tayo this month. we r that girl.'},
+    {title:'month five',  dates:'Sep 28 → Oct 28', note:'our required trip to marugame/sukiya every like 2 or 3 dates ahawhahahaha but this time its ramen kuroda.'},
+    {title:'month six',   dates:'Oct 28 → Nov 28', note:'AGHH naalala ko parin yung bigay natin sa isat isa sa ppcup. ang sarap tlga ng bread n yun and ahahahaha naalala ko parin nung pinaamoy mo sakin yung hininga mo stinky babu.'},
+  ],
+  // conclusion page (page 9): a title, a star badge and three little notes
+  outroTitle:'until next time',
+  outroBadge:'♥',
+  outroNotes:[
+    'grabe parin talaga parang ang bilis ng oras, parang kahapon lang nagnnotes palang ako sa msngr ahahahahahahahahaha \n im super super happy to have met you and andaming nagbago sakin once we met each other',
+    'and i hope to grow with u despite it being vv difficult okie. locked in na tayo and i really want to see us both achieve our goals',
+    'sorry i ran out of pictures from month 4-6 hehe di tayo nakapagdate masyado nun',
+  ],
+  // back cover (page 10)
+  endTitle:'the end',
+  endSub:'sa book na to',
+  endDates:'to be continued..',
+};
+/* page backgrounds: a printed pattern plus a contrasting strip along the spine.
+   patterns: gingham, dots, stars, hearts, flowers, clouds, leaves, tartan. strips: gingham, tartan, stripes, dots, hearts */
+const THEMES=[
+  {bg:'pinstripe'},                     // cover (dark wine)
+  {bg:'pinstripe'},                     // introduction
+  {bg:'stars',   band:'gingham'},       // month one
+  {bg:'clouds',  band:'tartan'},        // month two
+  {bg:'flowers', band:'tartan'},        // month three
+  {bg:'hearts',  band:'stripes'},       // month four
+  {bg:'tartan',  band:'hearts'},        // month five
+  {bg:'leaves',  band:'gingham'},       // month six
+  {bg:'pinstripe'},                     // conclusion (dark wine, like the cover)
+  {bg:'pinstripe'},                     // back cover
+];
+
+/* boxes in % of the page (x,y,w,h). Frames are fitted inside, keeping their shape. */
+/* the spine strip takes 11% of the page, so the boxes sit in the other 89% (left pages: strip on the right, right pages: on the left) */
+const slots=pg=>{const o=pg%2?13:2,w=41.5,g=2;return {UL:[o,14,w,39],UR:[o+w+g,14,w,39],LL:[o,56,w,38],LR:[o+w+g,56,w,38]}};
+// the message paper moves around each month: left upper -> left lower -> right lower -> right upper, then repeats
+const NOTE_ORDER=['UL','LL','LR','UR'];
+// sticker 0: top-right corner, sticker 1: next to the month title, sticker 2: on the message paper
+const store=JSON.parse(localStorage.getItem('scrap')||'{}');
+const save=()=>{try{localStorage.setItem('scrap',JSON.stringify(store))}catch(e){alert('Storage is full. Remove some photos.')}};
+const file=document.getElementById('file');
+let PR=1; // page width / height, updated on render
+
+function slot(id){
+  const ph=document.createElement('div');ph.className='ph';
+  ph.innerHTML='<div class="ic">🖼</div>Add Photo<small>Click to upload</small>';
+  // an uploaded photo wins; otherwise the photo from assets/photos.js
+  const def=(window.PHOTOS||{})[id];
+  if(store[id]==='')delete store[id];
+  const src=()=>store[id]||def;
+  const paint=()=>{const s=src();ph.classList.toggle('up',!!store[id]);if(s){ph.style.backgroundImage=`url(${s})`;ph.classList.add('has')}else{ph.style.backgroundImage='';ph.classList.remove('has')}};
+  ph.onclick=e=>{
+    // the ✕ removes an uploaded photo and goes back to the default one
+    if(store[id]&&e.offsetX>ph.clientWidth-30&&e.offsetY<30){delete store[id];save();paint();return}
+    file.onchange=()=>{const f=file.files[0];if(!f)return;shrink(f,d=>{store[id]=d;save();paint()});file.value=''};file.click();
+  };
+  paint();return ph;
+}
+function shrink(f,cb){
+  const r=new FileReader();r.onload=()=>{const im=new Image();im.onload=()=>{
+    const m=900,k=Math.min(1,m/Math.max(im.width,im.height));
+    const c=document.createElement('canvas');c.width=im.width*k;c.height=im.height*k;
+    c.getContext('2d').drawImage(im,0,0,c.width,c.height);cb(c.toDataURL('image/jpeg',.75));
+  };im.src=r.result};r.readAsDataURL(f);
+}
+function frameEl(id,box,fr){
+  const [bx,by,bw,bh]=box;
+  let w=Math.min(bw,bh*fr.ar/PR),h=w*PR/fr.ar;
+  const el=document.createElement('div');el.className='fs'+(fr.mat?' mat':'');
+  el.style.cssText=`left:${bx+(bw-w)/2}%;top:${by+(bh-h)/2}%;width:${w}%;height:${h}%`;
+  const ph=slot(id);
+  const [wx,wy,ww,wh,fill]=fr.win;
+  const oval=!fr.mat&&fill<0.8, pad=(fr.mat||oval)?0:0.01;
+  ph.style.cssText+=`;left:${(wx-pad)*100}%;top:${(wy-pad)*100}%;width:${(ww+2*pad)*100}%;height:${(wh+2*pad)*100}%`+(oval?';border-radius:50%':'');
+  const img=document.createElement('img');img.className='fr';img.src=fr.src;img.alt='';
+  el.append(ph,img);makeMovable(el,'pos_'+id);el.title='Drag to move. Use the round handle or scroll to rotate.';return el;
+}
+/* photostrip: one image with several photo windows */
+function stripEl(x,y,w,h){
+  const S=EXTRA.strip,el=document.createElement('div');el.className='fs strip';
+  el.style.cssText=`left:${x}%;top:${y}%;width:${w}%;height:${h}%`;
+  S.wins.forEach(([wx,wy,ww,wh],k)=>{const ph=slot('intro_s'+k);
+    ph.style.cssText+=`;left:${(wx-.004)*100}%;top:${(wy-.002)*100}%;width:${(ww+.008)*100}%;height:${(wh+.004)*100}%`;el.appendChild(ph)});
+  const img=document.createElement('img');img.className='fr';img.src=S.src;img.alt='';el.appendChild(img);
+  makeMovable(el,'pos_strip');return el;
+}
+function fit(box,ar){const [bx,by,bw,bh]=box;const w=Math.min(bw,bh*ar/PR),h=w*PR/ar;return [bx+(bw-w)/2,by+(bh-h)/2,w,h]}
+/* ---- page backgrounds ---- */
+const svgUrl=(w,h,body)=>`url("data:image/svg+xml,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}">${body}</svg>`)}")`;
+function starD(R,r){let d='';for(let k=0;k<10;k++){const a=k*Math.PI/5,q=k%2?r:R;d+=(k?'L':'M')+(q*Math.sin(a)).toFixed(2)+' '+(-q*Math.cos(a)).toFixed(2)}return d+'Z'}
+const HEART='M0 -3C-2 -7.5 -8.5 -6.5 -8.5 -1.5C-8.5 3 -3.5 6 0 9C3.5 6 8.5 3 8.5 -1.5C8.5 -6.5 2 -7.5 0 -3Z';
+// one motif, drawn around (0,0) at about 20 units across
+function motif(kind,c1,c2){
+  switch(kind){
+    case 'dots':return `<circle r="6" fill="${c1}"/>`;
+    case 'stars':return `<path d="${starD(10,4.6)}" fill="${c1}" stroke="${c1}" stroke-width="2" stroke-linejoin="round"/>`;
+    case 'hearts':return `<path d="${HEART}" fill="${c1}"/>`;
+    case 'flowers':return [0,72,144,216,288].map(a=>`<ellipse cx="0" cy="-5.2" rx="3.6" ry="4.8" fill="${c1}" transform="rotate(${a})"/>`).join('')+`<circle r="2.8" fill="${c2}"/>`;
+    case 'clouds':return `<g fill="#fff" fill-opacity=".85"><circle cx="-7" cy="2" r="5"/><circle cx="0" cy="-2" r="7"/><circle cx="8" cy="2" r="5"/><rect x="-7" y="2" width="15" height="5"/></g>`;
+    case 'leaves':return `<path d="M0 10Q2 0 0 -10" fill="none" stroke="${c1}" stroke-width="1.4" stroke-linecap="round"/>`+
+      [[-4,-4,-40],[4,-1,40],[-4,4,-40]].map(([x,y,r])=>`<ellipse cx="${x}" cy="${y}" rx="4.5" ry="2.2" fill="${c1}" transform="rotate(${r} ${x} ${y})"/>`).join('');
+  }
+  return '';
+}
+// a scattered repeat: two motifs at different sizes and angles, plus little three-dot clusters
+function printTile(kind,c1,c2){
+  const m=motif(kind,c1,c2),bits=d=>`<g fill="${c2}" transform="translate(${d})"><circle r="1.6"/><circle cx="4" cy="1" r="1.6"/><circle cx="1.5" cy="4.2" r="1.6"/></g>`;
+  return svgUrl(84,84,`<g transform="translate(22 24) rotate(-14) scale(1.05)">${m}</g><g transform="translate(63 64) rotate(18) scale(.8)">${m}</g>`+
+    (kind==='dots'||kind==='clouds'?'':bits('62 18')+bits('16 62')));
+}
+function patternCss(kind,h,s,big){
+  const c=(l,a)=>`hsla(${h},${s}%,${l}%,${a})`,base=`hsl(${h},${s}%,${big?92:86}%)`;
+  if(kind==='gingham'){const k=big?26:14;return `repeating-linear-gradient(0deg,${c(70,.35)} 0 ${k}px,transparent ${k}px ${2*k}px),repeating-linear-gradient(90deg,${c(70,.35)} 0 ${k}px,transparent ${k}px ${2*k}px),${base}`}
+  if(kind==='tartan'){const g=d=>`repeating-linear-gradient(${d}deg,${c(55,.28)} 0 10px,transparent 10px 26px,${c(65,.3)} 26px 44px,transparent 44px 52px,#ffffff70 52px 54px,transparent 54px 64px)`;return `${g(0)},${g(90)},${base}`}
+  // dark wine pinstripe for the introduction spread (ignores the page colour's lightness)
+  if(kind==='pinstripe')return `repeating-linear-gradient(90deg,hsla(${h},45%,62%,.16) 0 2px,transparent 2px 13px,hsla(${h},40%,8%,.35) 13px 26px,transparent 26px 30px),linear-gradient(180deg,hsl(${h},58%,17%),hsl(${h},62%,11%))`;
+  if(kind==='stripes')return `repeating-linear-gradient(90deg,${c(72,.55)} 0 9px,transparent 9px 18px),${base}`;
+  const t=printTile(kind,c(big?66:60,big?.6:.75),c(40,.4));
+  return `${t},${base}`;
+}
+const vignette=(h,s)=>`radial-gradient(ellipse at 50% 45%,transparent 55%,hsla(${h},${s}%,35%,.14))`;
+function pageStyle(h,s,th){
+  return `--h:${h};--accent:hsl(${h},${s}%,40%);--accent2:hsl(${h},${s}%,70%);--ink:hsl(${h},${s}%,20%);`+
+    `--bg:${vignette(h,s)},${patternCss(th.bg,h,s,true)};--band:${th.band?patternCss(th.band,h,s,false):'none'}`;
+}
+function band(p,th){if(th.band){const b=document.createElement('div');b.className='band';p.prepend(b)}}
+/* pages 0-1: title + introduction (no photos) */
+function buildIntro(pg){
+  const p=document.createElement('div');p.className='page intro '+(pg%2?'right':'left');
+  p.style.cssText=pageStyle(345,55,THEMES[pg])+';--bg:radial-gradient(ellipse at 45% 40%,transparent 35%,#0a0105b0),'+patternCss('pinstripe',345,55,true);
+  const add=(cls,txt)=>{const d=document.createElement('div');d.className=cls;d.textContent=txt;p.appendChild(d);return d};
+  if(pg===0){add('big',TEXT.coverTitle);add('sub',TEXT.coverSub);add('dates',TEXT.coverDates)}
+  else{add('title',TEXT.introTitle);add('card','').appendChild(Object.assign(document.createElement('div'),{className:'note',textContent:TEXT.intro}));
+    const b=add('badge',''),w=13;b.style.cssText=`left:1%;top:77%;width:${w}%;height:${w*PR}%`;b.innerHTML=badgeSvg(TEXT.badge)}
+  movables(pg,p);
+  return p;
+}
+/* page 9 (conclusion) and page 10 (back cover), in the introduction's dark style */
+const OUTRO_CARDS=[[52,12,42,23,1.5],[56,39,38,19,-2],[58,61,37,16,1.5]];   // x, y, w, h, rotation (% of the page)
+function buildOutro(pg){
+  const p=document.createElement('div');p.className='page intro outro '+(pg%2?'right':'left');
+  p.style.cssText=pageStyle(345,55,THEMES[pg])+';--bg:radial-gradient(ellipse at 45% 40%,transparent 35%,#0a0105b0),'+patternCss('pinstripe',345,55,true);
+  const add=(cls,txt)=>{const d=document.createElement('div');d.className=cls;d.textContent=txt;p.appendChild(d);return d};
+  if(pg===8){add('title',TEXT.outroTitle);
+    TEXT.outroNotes.forEach((t,k)=>{const [x,y,w,h,r]=OUTRO_CARDS[k%3];const c=add('card','');
+      c.style.cssText=`left:${x}%;top:${y}%;width:${w}%;height:${h}%;transform:rotate(${r}deg)`;
+      c.appendChild(Object.assign(document.createElement('div'),{className:'note',textContent:t}))});
+    const b=add('badge',''),w=11;b.style.cssText=`left:86%;top:1%;width:${w}%;height:${w*PR}%`;b.innerHTML=badgeSvg(TEXT.outroBadge)}
+  else{add('end',TEXT.endTitle);add('endsub',TEXT.endSub);add('dates',TEXT.endDates)}
+  movables(pg,p);
+  return p;
+}
+// photos on the conclusion page: id, x, y, width, rotation, shape (w/h), style
+const OUTRO_SNAPS=[['out_a',3,12,21,-6,.8,'tape'],['out_b',25,11,21,5,.8,''],['out_c',3,36,30,4,1.25,'tape'],
+  ['out_d',36,35,15,-3,753/1600,'slip'],['out_e',3,60,21,-4,.8,''],['out_f',26,64,29,3,1.25,'tape'],['out_g',57,78,25,-3,1.25,'']];
+// decorations from the pink coquette sticker set: name, x, y, height
+const OUTRO_STICKERS=[['lib4_37',49,9,10],['lib4_52',37.5,32.5,4.5],['lib4_51',87,50,11],['lib4_48',6,82,14],['lib4_47',46.5,23,13],['lib4_42',87,71,9],['lib4_49',86,78,11]];
+const libSticker=n=>LIBRARY.find(s=>s.src.endsWith('/'+n+'.webp'));
+/* heart-shaped photo with a white lace doily edge (drawn as SVG so it stays sharp at any size) */
+const HEART_VB=[-19,-16,38,35];
+// classic heart curve, k = scale around the heart's middle
+function heartPts(k,n){const pts=[];for(let i=0;i<=n;i++){const t=i/n*2*Math.PI;
+  pts.push([16*Math.sin(t)**3*k,(-(13*Math.cos(t)-5*Math.cos(2*t)-2*Math.cos(3*t)-Math.cos(4*t))-2)*k+2])}return pts}
+const heartPath=k=>heartPts(k,160).map(([x,y],i)=>(i?'L':'M')+x.toFixed(2)+' '+y.toFixed(2)).join('')+'Z';
+function heartRing(k,step,fn){   // evenly spaced points along a scaled heart outline
+  const pts=heartPts(k,2000);let out='',acc=step;
+  for(let i=1;i<pts.length;i++){acc+=Math.hypot(pts[i][0]-pts[i-1][0],pts[i][1]-pts[i-1][1]);if(acc>=step){acc=0;out+=fn(pts[i][0].toFixed(2),pts[i][1].toFixed(2))}}
+  return out}
+function heartEl(box=[2,3,60,64],id='cover_heart',key='pos_heart'){
+  const vb=HEART_VB.join(' '),ar=HEART_VB[2]/HEART_VB[3];
+  const [x,y,w,h]=fit(box,ar);
+  const el=document.createElement('div');el.className='fs heart';el.style.cssText=`left:${x}%;top:${y}%;width:${w}%;height:${h}%`;
+  el.innerHTML=`<svg viewBox="${vb}" preserveAspectRatio="none">`+
+    heartRing(1.16,1.9,(x,y)=>`<circle cx="${x}" cy="${y}" r="1.25" fill="var(--lace)"/>`)+      // scalloped rim
+    `<path d="${heartPath(1.15)}" fill="var(--lace)"/>`+
+    heartRing(1.15,1.9,(x,y)=>`<circle cx="${x}" cy="${y}" r=".38" fill="#7a2338" opacity=".55"/>`)+   // punched holes
+    heartRing(1.09,1.1,(x,y)=>`<circle cx="${x}" cy="${y}" r=".22" fill="#d7a3b3"/>`)+
+    `<path d="${heartPath(1.035)}" fill="none" stroke="#e7b9c6" stroke-width=".35"/></svg>`;
+  const ph=slot(id);
+  ph.style.setProperty('--m',`url("data:image/svg+xml,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="${vb}" preserveAspectRatio="none" width="380" height="350"><path d="${heartPath(1)}"/></svg>`)}")`);
+  el.appendChild(ph);
+  makeMovable(el,key);return el;
+}
+/* small white-bordered photos. ar = width / height of the whole snapshot; cls: 'tape' adds washi tape, 'slip' = no border */
+function snapEl(id,x,y,w,r,ar=.8,cls=''){
+  const el=document.createElement('div');el.className='fs snap '+cls;
+  el.style.cssText=`left:${x}%;top:${y}%;width:${w}%;height:${w*PR/ar}%;transform:rotate(${r}deg)`;
+  el.appendChild(slot(id));makeMovable(el,'pos_'+id);return el;
+}
+function badgeSvg(t){
+  return `<svg viewBox="-50 -50 100 100"><path d="${starD(48,30)}" fill="#f3a3bd" stroke="#fff" stroke-width="3" stroke-linejoin="round" transform="rotate(8)"/>`+
+    `<text y="12" text-anchor="middle" font-size="36" font-family="Cherry Cream Soda,cursive" fill="#7a1c37">${t}</text></svg>`;
+}
+/* stickers can be dragged, rotated (handle or mouse wheel) and reset (double-click); positions are saved per sticker */
+store.stk=store.stk||{};
+function stickerEl(st,x,y,hMax,cls,key){
+  let hh=hMax,w=hh*st.ar/PR;if(w>16){w=16;hh=w*PR/st.ar}
+  const saved=store.stk[key];
+  const e=document.createElement('div');e.className='sticker'+(cls&&!saved?' '+cls:'');
+  const L=saved?saved.x:Math.min(x,99-w),T=saved?saved.y:Math.min(y,99-hh);
+  e.style.cssText=`left:${L}%;top:${T}%;width:${w}%;height:${hh}%;transform:rotate(${saved?saved.r:0}deg)`;
+  e.title='Drag to move. Use the round handle or scroll to rotate. Double-click to reset.';
+  e.innerHTML=`<img src="${st.src}" alt="" draggable="false">`;
+  makeMovable(e,key,{reset:true});return e;
+}
+/* drag to move, ⟳ handle or mouse wheel to rotate; saved in store.stk[key] as {x,y,r} (% of the page, degrees).
+   opts.reset: double-click puts it back; opts.onDelete: shows a ✕ button */
+function makeMovable(e,key,opts={}){
+  e.classList.add('mv');
+  const rot=document.createElement('div');rot.className='rot';rot.textContent='⟳';rot.title='Drag to rotate';e.appendChild(rot);
+  if(opts.onDelete){const d=document.createElement('div');d.className='del';d.textContent='✕';d.title='Remove';
+    d.addEventListener('pointerdown',ev=>{ev.stopPropagation();ev.preventDefault();opts.onDelete()});e.appendChild(d)}
+  const saved=store.stk[key];
+  if(saved){e.style.left=saved.x+'%';e.style.top=saved.y+'%';e.style.transform=`rotate(${saved.r}deg)`}
+  const get=()=>Object.assign({r:0},store.stk[key]);
+  const put=s=>{store.stk[key]=s;e.classList.remove('by-title');e.style.left=s.x+'%';e.style.top=s.y+'%';e.style.transform=`rotate(${s.r}deg)`};
+  const here=s=>{const pr=e.offsetParent.getBoundingClientRect();s.x=e.offsetLeft/pr.width*100;s.y=e.offsetTop/pr.height*100;return pr};
+  e.addEventListener('pointerdown',ev=>{
+    if(ev.button>0||ev.target.classList.contains('del'))return;
+    ev.stopPropagation();selectMv(e);
+    const s=get(),pr=here(s);   // start from where it is now, also for auto-placed items
+    const w=e.offsetWidth/pr.width*100,h=e.offsetHeight/pr.height*100;
+    const sx=ev.clientX,sy=ev.clientY,x0=s.x,y0=s.y,r0=s.r;
+    const rotating=ev.target===rot;
+    const b=e.getBoundingClientRect(),cx=b.left+b.width/2,cy=b.top+b.height/2,a0=Math.atan2(sy-cy,sx-cx);
+    let moved=false,L0=0,T0=0,last=ev;
+    const move=m=>{
+      last=m;
+      if(!moved&&Math.hypot(m.clientX-sx,m.clientY-sy)<4)return;   // small wobble = a click (frames open the photo picker)
+      if(!moved){moved=true;try{e.setPointerCapture(ev.pointerId)}catch(_){}
+        if(!rotating){   // lift it out of the page into the drag layer (pixel units), so it can go anywhere
+          L0=pr.left+e.offsetLeft;T0=pr.top+e.offsetTop;
+          e.style.width=e.offsetWidth+'px';e.style.height=e.offsetHeight+'px';e.classList.remove('by-title');
+          dragKey=key;document.getElementById('drag').appendChild(e);document.body.classList.add('dragging');
+        }}
+      if(rotating){s.r=Math.round(r0+(Math.atan2(m.clientY-cy,m.clientX-cx)-a0)*180/Math.PI);put(s);return}
+      e.style.left=(L0+m.clientX-sx)+'px';e.style.top=(T0+m.clientY-sy)+'px';
+      edgeFlip(m.clientX);
+    };
+    const up=()=>{removeEventListener('pointermove',move);removeEventListener('pointerup',up);removeEventListener('pointercancel',up);
+      if(!moved)return;
+      e.addEventListener('click',c=>{c.stopPropagation();c.preventDefault()},{capture:true,once:true});
+      if(rotating){save();return}
+      edgeFlip(null);
+      // drop on whichever page the pointer is over
+      const right=last.clientX>=innerWidth/2,page=document.getElementById(right?'R':'L'),box=page.querySelector('.inner')||page;
+      const r=box.getBoundingClientRect(),W=e.offsetWidth/r.width*100,H=e.offsetHeight/r.height*100;
+      s.x=Math.min(100-W/2,Math.max(-W/2,(parseFloat(e.style.left)-r.left)/r.width*100));
+      s.y=Math.min(100-H/2,Math.max(-H/2,(parseFloat(e.style.top)-r.top)/r.height*100));
+      s.pg=spread*2+(right?1:0);store.stk[key]=s;
+      dragKey=null;document.body.classList.remove('dragging');e.remove();save();render();
+    };
+    addEventListener('pointermove',move);addEventListener('pointerup',up);addEventListener('pointercancel',up);
+    if(rotating||!e.classList.contains('fs'))ev.preventDefault();
+  });
+  e.addEventListener('wheel',ev=>{
+    if(!e.classList.contains('sel'))return;ev.preventDefault();
+    const s=get();here(s);s.r=(s.r||0)+(ev.deltaY>0?5:-5);put(s);save();
+  },{passive:false});
+  if(opts.reset)e.addEventListener('dblclick',()=>{delete store.stk[key];save();render()});
+  e._del=opts.onDelete;
+}
+// hold a dragged item at the screen edge (or press ← →) to turn to the previous / next spread
+let flipT=null,flipDir=0;
+function edgeFlip(x){
+  const d=x==null?0:x<strip+46?-1:x>innerWidth-46?1:0;
+  flipL.classList.toggle('on',d<0);flipR.classList.toggle('on',d>0);
+  if(d===flipDir)return;flipDir=d;clearInterval(flipT);
+  if(d)flipT=setInterval(()=>go(d),750);
+}
+// a drop re-renders the page; swallow the click that follows so a frame doesn't open the photo picker
+let dropAt=0;addEventListener('pointerup',()=>{if(document.body.classList.contains('dragging'))dropAt=Date.now()},true);
+addEventListener('click',c=>{if(Date.now()-dropAt<400){c.stopPropagation();c.preventDefault()}},true);
+let selected=null;
+function selectMv(e){if(selected&&selected!==e)selected.classList.remove('sel');selected=e;e&&e.classList.add('sel')}
+document.addEventListener('pointerdown',()=>selectMv(null));
+document.addEventListener('keydown',ev=>{if(selected&&selected._del&&(ev.key==='Delete'||ev.key==='Backspace')&&!ev.target.isContentEditable)selected._del()});
+
+/* user stickers (from the library or uploaded), stored per page in store.custom[pg] */
+store.custom=store.custom||{};
+function customEl(home,c){
+  const e=document.createElement('div');e.className='sticker';
+  const w=c.h*c.ar/PR;
+  e.style.cssText=`left:${c.x}%;top:${c.y}%;width:${w}%;height:${c.h}%`;
+  e.innerHTML=`<img src="${c.src}" alt="" draggable="false">`;
+  makeMovable(e,'c_'+c.id,{onDelete:()=>{store.custom[home]=store.custom[home].filter(o=>o.id!==c.id);delete store.stk['c_'+c.id];save();selected=null;e.remove()}});
+  return e;
+}
+/* every movable thing, listed by the page it starts on. store.stk[key].pg says which page it was moved to. */
+function homeItems(pg){
+  const out=[];
+  if(pg===0){out.push({key:'pos_heart',make:heartEl});
+    out.push({key:'pos_cover_a',make:()=>snapEl('cover_a',67,8,21,6)});
+    out.push({key:'pos_cover_b',make:()=>snapEl('cover_b',72,52,19,-5)})}
+  if(pg===1)out.push({key:'pos_strip',make:()=>{const [x,y,w,h]=fit([58,4,40,93],EXTRA.strip.ar);return stripEl(x,y,w,h)}});
+  if(pg===8){OUTRO_SNAPS.forEach(([id,x,y,w,r,ar,cls])=>out.push({key:'pos_'+id,make:()=>snapEl(id,x,y,w,r,ar,cls)}));
+    OUTRO_STICKERS.forEach(([n,x,y,h])=>{const st=libSticker(n);if(st)out.push({key:'out_'+n,make:()=>stickerEl(st,x,y,h,'','out_'+n)})})}
+  if(pg===9)out.push({key:'pos_out_heart',make:()=>heartEl([18,6,64,54],'out_h','pos_out_heart')});
+  if(pg>=2&&pg<8){
+    const i=pg-2,pk=PACKS[i],ns=NOTE_ORDER[i%4],frSlots=['UL','UR','LL','LR'].filter(k=>k!==ns);
+    pk.frames.slice(0,3).forEach((fr,j)=>out.push({key:`pos_p${i}_f${j}`,make:()=>frameEl(`p${i}_f${j}`,slots(pg)[frSlots[j]],fr)}));
+    const [s0,s1,s2]=pk.stickers;
+    if(s0)out.push({key:`p${i}_s0`,make:()=>stickerEl(s0,86,12,15,'',`p${i}_s0`)});
+    if(s1)out.push({key:`p${i}_s1`,make:()=>stickerEl(s1,0,1.5,11,'by-title',`p${i}_s1`)});   // placed next to the title after layout
+    if(s2)out.push({key:`p${i}_s2`,make:()=>{const [nx,ny,nw,nh]=fit(slots(pg)[ns],pk.note.ar);   // bottom-right corner of the message paper
+      return stickerEl(s2,nx+nw*0.78,ny+nh*0.66,14,'',`p${i}_s2`)}});
+  }
+  (store.custom[pg]||[]).forEach(c=>out.push({key:'c_'+c.id,make:()=>customEl(pg,c)}));
+  return out;
+}
+let dragKey=null;   // the item being dragged is drawn in the drag layer, not on its page
+function movables(pg,p){
+  for(let q=0;q<SPREADS*2;q++)homeItems(q).forEach(it=>{
+    const s=store.stk[it.key],on=s&&s.pg!=null?s.pg:q;
+    if(on===pg&&it.key!==dragKey)p.appendChild(it.make());
+  });
+}
+function build(pg){
+  if(pg<2)return buildIntro(pg);
+  if(pg>=8)return buildOutro(pg);
+  const i=pg-2,pk=PACKS[i];
+  const p=document.createElement('div');p.className='page '+(pg%2?'right':'left');
+  const T=TEXT.months[i]||{};
+  p.style.cssText=pageStyle(pk.hue,pk.sat,THEMES[pg]);
+  p.innerHTML=`<div class="title"></div><div class="date"></div>`;
+  p.querySelector('.title').textContent=T.title||'';p.querySelector('.date').textContent=T.dates||'';
+  band(p,THEMES[pg]);
+  const [nx,ny,nw,nh]=fit(slots(pg)[NOTE_ORDER[i%4]],pk.note.ar);
+  const paper=document.createElement('div');paper.className='paper';
+  paper.style.cssText=`left:${nx}%;top:${ny}%;width:${nw}%;height:${nh}%`;
+  paper.innerHTML=`<img src="${pk.note.src}" alt="">`;
+  const n=document.createElement('div');n.className='note';n.textContent=T.note||'';
+  const tx=pk.note.text;n.style.cssText=`left:${tx[0]*100}%;top:${tx[1]*100}%;width:${tx[2]*100}%;height:${tx[3]*100}%`;
+  paper.appendChild(n);p.appendChild(paper);
+  movables(pg,p);
+  return p;
+}
+/* ---- sticker drawer: pick (or upload) a sticker, then click on a page to place it ---- */
+const tray=document.getElementById('tray'),grid=tray.querySelector('.grid'),stFile=document.getElementById('stFile');
+let pending=null;
+[...PACKS.flatMap(p=>p.stickers),...LIBRARY].forEach(st=>{
+  const im=document.createElement('img');im.src=st.src;im.alt='';im.loading='lazy';
+  im.onclick=()=>pick(st,im);grid.appendChild(im);
+});
+function pick(st,im){
+  grid.querySelectorAll('.pick').forEach(o=>o.classList.remove('pick'));im&&im.classList.add('pick');
+  pending=st;document.body.classList.add('placing');tray.classList.remove('open');
+}
+document.getElementById('addSt').onclick=e=>{e.stopPropagation();tray.classList.toggle('open')};
+tray.addEventListener('pointerdown',e=>e.stopPropagation());
+document.getElementById('upSt').onclick=()=>stFile.click();
+stFile.onchange=()=>{const f=stFile.files[0];stFile.value='';if(!f)return;cutSticker(f,st=>pick(st))};
+// place the picked sticker where the page is clicked
+document.addEventListener('pointerdown',ev=>{
+  if(!pending)return;
+  const page=ev.target.closest&&ev.target.closest('.page');
+  if(!page){pending=null;document.body.classList.remove('placing');return}
+  ev.stopPropagation();ev.preventDefault();
+  const box=page.querySelector('.inner')||page,r=box.getBoundingClientRect();
+  const pr=r.width/r.height,h=14,w=Math.min(20,h*pending.ar/pr),hh=w*pr/pending.ar;
+  const pg=spread*2+(page.id==='R'?1:0),id=Date.now().toString(36)+Math.random().toString(36).slice(2,5);
+  (store.custom[pg]=store.custom[pg]||[]).push({id,src:pending.src,ar:pending.ar,h:hh,
+    x:(ev.clientX-r.left)/r.width*100-w/2,y:(ev.clientY-r.top)/r.height*100-hh/2});
+  pending=null;document.body.classList.remove('placing');save();render();
+},true);
+// uploaded stickers: shrink, drop a plain white/light background, trim the empty edges
+function cutSticker(f,cb){
+  const fr=new FileReader();fr.onload=()=>{const im=new Image();im.onload=()=>{
+    const k=Math.min(1,500/Math.max(im.width,im.height)),W=Math.round(im.width*k),H=Math.round(im.height*k);
+    const c=document.createElement('canvas');c.width=W;c.height=H;const g=c.getContext('2d');g.drawImage(im,0,0,W,H);
+    const d=g.getImageData(0,0,W,H),px=d.data;
+    const light=i=>px[i+3]>0&&Math.min(px[i],px[i+1],px[i+2])>=232&&Math.max(px[i],px[i+1],px[i+2])-Math.min(px[i],px[i+1],px[i+2])<=16;
+    const corners=[0,W-1,(H-1)*W,H*W-1].filter(p=>light(p*4)).length;
+    if(corners>=3){   // flood fill the background from the edges
+      const seen=new Uint8Array(W*H),q=[];
+      for(let x=0;x<W;x++)q.push(x,(H-1)*W+x);for(let y=0;y<H;y++)q.push(y*W,y*W+W-1);
+      while(q.length){const p=q.pop();if(seen[p]||!light(p*4))continue;seen[p]=1;px[p*4+3]=0;
+        const x=p%W;if(x>0)q.push(p-1);if(x<W-1)q.push(p+1);if(p>=W)q.push(p-W);if(p<W*(H-1))q.push(p+W)}
+      g.putImageData(d,0,0);
+    }
+    let x0=W,y0=H,x1=0,y1=0;
+    for(let y=0;y<H;y++)for(let x=0;x<W;x++)if(px[(y*W+x)*4+3]>0){if(x<x0)x0=x;if(x>x1)x1=x;if(y<y0)y0=y;if(y>y1)y1=y}
+    if(x1<x0){x0=0;y0=0;x1=W-1;y1=H-1}
+    const t=document.createElement('canvas');t.width=x1-x0+1;t.height=y1-y0+1;t.getContext('2d').drawImage(c,-x0,-y0);
+    let src=t.toDataURL('image/webp',.85);if(!src.startsWith('data:image/webp'))src=t.toDataURL('image/png');
+    cb({src,ar:t.width/t.height});
+  };im.src=fr.result};fr.readAsDataURL(f);
+}
+const SPREADS=5;
+let spread=Math.min(SPREADS-1,Math.max(0,parseInt(location.hash.slice(2))||0));
+/* the left page's content starts to the right of the minimized player so nothing is hidden behind it */
+let strip=0;
+function measureStrip(){const pl=document.getElementById('player');if(!pl.classList.contains('min'))return;pl.style.transition='none';strip=Math.max(0,pl.getBoundingClientRect().right)+10;pl.offsetWidth;pl.style.transition=''}
+document.getElementById('player').addEventListener('transitionend',e=>{if(e.propertyName!=='left')return;const o=strip;measureStrip();if(Math.abs(o-strip)>2)render()});
+function render(){
+  const W=innerWidth/2,H=innerHeight;measureStrip();
+  PR=(W-strip)/H;const a=build(spread*2);
+  PR=W/H;const b=build(spread*2+1);
+  const inner=document.createElement('div');inner.className='inner';inner.style.left=strip+'px';
+  inner.append(...a.childNodes);a.appendChild(inner);
+  document.getElementById('L').replaceWith(a);document.getElementById('R').replaceWith(b);a.id='L';b.id='R';
+  [a,b].forEach(p=>{const t=p.querySelector('.title'),s=p.querySelector('.by-title'),d=p.querySelector('.date');if(!t||!s)return;
+    // shrink the title until title + sticker clear the date pill
+    for(let i=0;i<30;i++){s.style.left=(t.offsetLeft+t.offsetWidth+8)+'px';if(!d||s.offsetLeft+s.offsetWidth+6<=d.offsetLeft)break;t.style.fontSize=(parseFloat(getComputedStyle(t).fontSize)*0.95)+'px'}});
+  flipL.style.left=strip+'px';
+  count.textContent=`${spread*2+1}-${spread*2+2} / ${SPREADS*2}`;
+  prev.disabled=spread===0;next.disabled=spread===SPREADS-1;
+}
+/* page turn: the outgoing pages are moved into #turn on top of the new spread. Going forward the old
+   right page swings over the spine to the left, showing the new left page on its back (mirrored going back). */
+let turning=null;
+const calm=matchMedia('(prefers-reduced-motion: reduce)');
+function turn(d,oldL,oldR){
+  if(calm.matches)return;
+  const fwd=d>0,T=document.createElement('div');T.id='turn';
+  const still=fwd?oldL:oldR,lift=fwd?oldR:oldL;
+  const back=document.getElementById(fwd?'L':'R').cloneNode(true);
+  back.querySelectorAll('[id]').forEach(e=>e.removeAttribute('id'));
+  [still,lift,back].forEach(p=>p.removeAttribute('id'));
+  still.style.left=fwd?'0':'50%';
+  const leaf=document.createElement('div');leaf.className='leaf';
+  leaf.style.left=fwd?'50%':'0';leaf.style.transformOrigin=fwd?'left center':'right center';
+  const under=document.createElement('div');under.className='under';under.style.left=fwd?'50%':'0';
+  lift.classList.add('face','front');back.classList.add('face','back');
+  // shading runs from the spine outwards on each face
+  lift.style.setProperty('--sd',fwd?'to left':'to right');back.style.setProperty('--sd',fwd?'to right':'to left');
+  const sh=[lift,back].map(p=>{const s=document.createElement('div');s.className='shade';p.appendChild(s);return s});
+  leaf.append(lift,back);T.append(still,under,leaf);document.body.appendChild(T);
+  const ms=820,ease='cubic-bezier(.45,.05,.3,1)';
+  const a=leaf.animate([{transform:'rotateY(0deg)'},{transform:`rotateY(${fwd?-180:180}deg)`}],{duration:ms,easing:ease,fill:'forwards'});
+  sh[0].animate([{opacity:0},{opacity:1}],{duration:ms*.5,easing:'ease-in',fill:'forwards'});
+  sh[1].animate([{opacity:1},{opacity:1,offset:.5},{opacity:0}],{duration:ms,easing:ease,fill:'forwards'});
+  // the page being uncovered starts in the leaf's shadow
+  under.animate([{opacity:.35},{opacity:0}],{duration:ms*.7,easing:'ease-out',fill:'forwards'});
+  turning=a;a.onfinish=a.oncancel=()=>{T.remove();if(turning===a)turning=null};
+}
+const go=d=>{const s=spread+d;if(s<0||s>=SPREADS)return;
+  if(turning)turning.finish();
+  const oldL=document.getElementById('L'),oldR=document.getElementById('R');
+  spread=s;render();turn(d,oldL,oldR)};
+prev.onclick=()=>go(-1);next.onclick=()=>go(1);
+document.addEventListener('keydown',e=>{if(e.target.isContentEditable)return;if(e.key==='ArrowLeft')go(-1);if(e.key==='ArrowRight')go(1)});
+document.fonts&&document.fonts.ready.then(render);let rt;addEventListener('resize',()=>{clearTimeout(rt);rt=setTimeout(render,150)});
+render();
+
+/* ---- record player ---- */
+const player=document.getElementById('player'),platter=document.getElementById('platter'),now=document.getElementById('now');
+let timer=null;
+function setPlaying(on){
+  player.classList.toggle('on',on);
+  clearInterval(timer);
+  if(on)timer=setInterval(spawn,300);
+}
+function spawn(){
+  const r=platter.getBoundingClientRect();
+  const x0=Math.max(r.left,0),x1=r.right;
+  const p=document.createElement('div');p.className='note-p';
+  p.textContent=['♪','♫','♬','♩'][Math.floor(Math.random()*4)];
+  p.style.left=(x0+(x1-x0)*(.3+Math.random()*.7))+'px';
+  p.style.top=(r.top+r.height*(.1+Math.random()*.6))+'px';
+  const big=player.classList.contains('max');
+  p.style.fontSize=((big?20:12)+Math.random()*(big?20:10))+'px';
+  p.style.setProperty('--dx',(Math.random()*(big?90:40))+'px');
+  p.style.setProperty('--dy',-((big?90:50)+Math.random()*(big?150:60))+'px');
+  p.style.setProperty('--r',(Math.random()*60-30)+'deg');
+  p.style.setProperty('--d',(2.2+Math.random()*1.6)+'s');
+  document.body.appendChild(p);setTimeout(()=>p.remove(),4200);
+}
+/* playlist: [artist, title, file in /music]. Plays in this order and loops. */
+const TRACKS=[
+ ['Paramore','The Only Exception','music/The Only Exception.mp3'],
+ ['NIKI','Buzz','music/Buzz.mp3'],
+ ['Olivia Rodrigo','drop dead','music/Olivia_Rodrigo_-_drop_dead_2026_(mp3.pm).mp3'],
+ ['beabadoobee','Talk','music/Talk.mp3'],
+ ['NIKI','Magnets','music/Magnets.mp3'],
+ ['Olivia Rodrigo','stupid song','music/Olivia_Rodrigo_-_Olivia_Rodrigo_-_stupid_song_Official_Music_Video_(mp3.pm).mp3'],
+ ['HONNE ft. NIKI','Location Unknown','music/Location Unknown (feat. NIKI) [10 Years].mp3'],
+ ['NIKI','Tsunami','music/Tsunami.mp3'],
+ ['Olivia Rodrigo (cover)','stupid song','music/stupid song (orig. olivia rodrigo).mp3'],
+ ['Paramore','The Only Exception (instrumental)','music/Raznye_ispolniteli_-_The_Only_Exception_Instrumental_version_originally_performed_by_Paramore_(mp3.pm).mp3']
+];
+/* ---- turntable drawing (units: 1000 = deck height). Record centre (500,500), tonearm pivot (930,140) ---- */
+(function drawTurntable(){
+  const grooves=[];for(let r=142;r<=392;r+=5)grooves.push(`<circle r="${r}" stroke="#fff" stroke-opacity="${[232,300,352].some(g=>Math.abs(g-r)<3)?.13:.045}" stroke-width="1.2"/>`);
+  const dots=[423,413,403].map((r,k)=>`<circle r="${r}" fill="none" stroke="#d9dde3" stroke-width="4.2" stroke-linecap="round" stroke-dasharray="0 ${(2*Math.PI*r/(180+k*0)).toFixed(3)}"/>`).join('');
+  const tube=`M0 20L0 320C0 410 34 432 34 492L34 516`;
+  document.getElementById('tt').innerHTML=`<defs>
+    <linearGradient id="gDeck" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#7d8794"/><stop offset=".45" stop-color="#56606c"/><stop offset="1" stop-color="#3d4550"/></linearGradient>
+    <filter id="fBrush" x="0" y="0" width="1" height="1"><feTurbulence type="fractalNoise" baseFrequency=".0015 .75" numOctaves="2" seed="4"/><feColorMatrix values="0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 .5 0 0 0 -.18"/></filter>
+    <radialGradient id="gRim"><stop offset=".9" stop-color="#1b1d21"/><stop offset=".975" stop-color="#2a2d33"/><stop offset=".99" stop-color="#c9cdd3"/><stop offset="1" stop-color="#7b8088"/></radialGradient>
+    <radialGradient id="gVinyl"><stop offset="0" stop-color="#1d1d1f"/><stop offset=".33" stop-color="#0d0d0e"/><stop offset=".98" stop-color="#151517"/><stop offset="1" stop-color="#2b2b2e"/></radialGradient>
+    <radialGradient id="gLabel"><stop offset="0" stop-color="#fffdf8"/><stop offset="1" stop-color="#ece6da"/></radialGradient>
+    <radialGradient id="gBase" cx=".4" cy=".35"><stop offset="0" stop-color="#34373c"/><stop offset=".85" stop-color="#121315"/><stop offset="1" stop-color="#050506"/></radialGradient>
+    <radialGradient id="gChromeR" cx=".35" cy=".3"><stop offset="0" stop-color="#ffffff"/><stop offset=".45" stop-color="#c3c8cf"/><stop offset=".8" stop-color="#7c828b"/><stop offset="1" stop-color="#4a4f56"/></radialGradient>
+    <linearGradient id="gChromeH" x1="0" x2="1"><stop offset="0" stop-color="#5d6269"/><stop offset=".25" stop-color="#e9ecef"/><stop offset=".45" stop-color="#9aa0a8"/><stop offset=".7" stop-color="#dfe3e7"/><stop offset="1" stop-color="#555a61"/></linearGradient>
+    <linearGradient id="gSheen" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset=".5" stop-color="#fff" stop-opacity=".13"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient>
+    <filter id="fShadow" x="-30%" y="-30%" width="160%" height="160%"><feDropShadow dx="10" dy="14" stdDeviation="7" flood-opacity=".55"/></filter>
+    <filter id="fSoft"><feGaussianBlur stdDeviation="10"/></filter>
+  </defs>
+  <circle cx="505" cy="508" r="436" fill="#000" opacity=".45" filter="url(#fSoft)"/>
+  <g id="rec"><g transform="translate(500 500)">
+    <circle r="432" fill="url(#gRim)"/>${dots}
+    <circle r="398" fill="url(#gVinyl)"/><g fill="none">${grooves.join('')}</g>
+    <circle r="132" fill="url(#gLabel)"/><circle r="124" fill="none" stroke="#6b7bd6" stroke-width="3"/><circle r="117" fill="none" stroke="#6b7bd6" stroke-width="1"/>
+    <path d="${HEART}" transform="translate(0 -78) scale(1.6)" fill="#e2687f"/>
+    <text id="lblT" y="-30" text-anchor="middle" font-family="Cherry Cream Soda, cursive" font-size="22" fill="#2b2b3a"></text>
+    <text id="lblA" y="0" text-anchor="middle" font-family="Caveat, cursive" font-size="24" fill="#555"></text>
+    <text y="48" text-anchor="middle" font-family="sans-serif" font-size="13" letter-spacing="3" fill="#888">OUR DIGITAL SCRAPBOOK</text>
+    <text x="70" y="82" text-anchor="middle" font-family="sans-serif" font-size="16" fill="#888">33⅓</text>
+    <text x="-70" y="82" text-anchor="middle" font-family="sans-serif" font-size="13" fill="#888">SIDE A</text>
+    <circle r="9" fill="url(#gChromeR)" stroke="#555" stroke-width="1"/>
+  </g></g>
+  <path d="M500 500L160 210A430 430 0 0 1 300 110Z" fill="url(#gSheen)" opacity=".9" filter="url(#fSoft)"/>
+  <path d="M500 500L840 790A430 430 0 0 1 700 890Z" fill="url(#gSheen)" opacity=".7" filter="url(#fSoft)"/>
+  <circle cx="930" cy="140" r="104" fill="url(#gBase)" stroke="#000" stroke-width="2"/>
+  <circle cx="930" cy="140" r="94" fill="none" stroke="#ffffff1c" stroke-width="2"/>
+  <circle cx="985" cy="232" r="15" fill="url(#gChromeR)" stroke="#333"/><path d="M985 220v8" stroke="#333" stroke-width="2"/>
+  <g transform="translate(917 588)"><rect x="-16" y="-22" width="32" height="44" rx="6" fill="url(#gBase)" stroke="#000"/><path d="M-11 -6h22" stroke="#666" stroke-width="5" stroke-linecap="round"/></g>
+  <g id="arm"><g transform="translate(930 140)" filter="url(#fShadow)">
+    <rect x="-9" y="-62" width="18" height="70" fill="url(#gChromeH)"/>
+    <rect x="-31" y="-126" width="62" height="78" rx="9" fill="url(#gChromeH)" stroke="#3b3f45" stroke-width="1.5"/>
+    <path d="M-31 -102h62M-31 -96h62M-31 -72h62" stroke="#00000040" stroke-width="2"/>
+    <rect x="-24" y="-134" width="48" height="12" rx="4" fill="#1c1d20"/>
+    <path d="${tube}" fill="none" stroke="#3e4248" stroke-width="19" stroke-linecap="round"/>
+    <path d="${tube}" fill="none" stroke="#a6acb4" stroke-width="15" stroke-linecap="round"/>
+    <path d="${tube}" fill="none" stroke="#e7eaee" stroke-width="7" stroke-linecap="round" transform="translate(-2.5 0)"/>
+    <path d="${tube}" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" transform="translate(-4 0)"/>
+    <circle r="50" fill="url(#gChromeR)" stroke="#3b3f45" stroke-width="2"/>
+    <circle r="31" fill="#1b1c1f" stroke="#666" stroke-width="2"/><circle r="10" fill="url(#gChromeR)"/>
+    <g transform="translate(34 512) rotate(20.6)">
+      <rect x="-10" y="-8" width="20" height="20" rx="3" fill="url(#gChromeH)" stroke="#333"/>
+      <path d="M13 22Q34 14 44 20" fill="none" stroke="#c7ccd2" stroke-width="5" stroke-linecap="round"/>
+      <path d="M-15 12L15 12L17 64L-17 64Z" fill="#1f2023" stroke="#000"/>
+      <path d="M-12 16L-12 60" stroke="#ffffff22" stroke-width="2"/>
+      <circle cx="-6" cy="30" r="2.2" fill="#d33"/><circle cx="6" cy="30" r="2.2" fill="#3a6"/><circle cx="-6" cy="42" r="2.2" fill="#36c"/><circle cx="6" cy="42" r="2.2" fill="#ddd"/>
+      <rect x="-12" y="60" width="24" height="26" rx="2" fill="#111" stroke="#555"/>
+      <path d="M0 86L0 91" stroke="#ccc" stroke-width="2"/>
+    </g>
+  </g></g>`;
+})();
+const lblT=document.getElementById('lblT'),lblA=document.getElementById('lblA');
+let ti=0;const audio=new Audio();audio.preload='auto';
+function load(n){ti=(n+TRACKS.length)%TRACKS.length;audio.src=encodeURI(TRACKS[ti][2]);
+  const t=TRACKS[ti][1];lblT.textContent=t.length>20?t.slice(0,19)+'…':t;lblA.textContent=TRACKS[ti][0].replace(/ \(.*\)/,'');}
+load(0);
+audio.onended=()=>{load(ti+1);audio.play()};
+// a missing or unplayable file: skip to the next song (stop after trying every song once)
+let bad=0;
+audio.onerror=()=>{console.warn('cannot play',TRACKS[ti][2]);if(++bad>=TRACKS.length){stop();now.textContent='♪ no playable songs in /music';return}
+  const want=onRecord(armA);load(ti+1);if(want)audio.play().catch(()=>{})};   // needle on the record = keep playing
+audio.onplaying=()=>{bad=0};
+audio.onplay=()=>{setPlaying(true);pp.textContent='⏸';now.textContent='♪ '+TRACKS[ti][0]+' · '+TRACKS[ti][1]};
+audio.onpause=()=>{setPlaying(false);pp.textContent='▶';now.textContent='♪ paused'};
+/* ---- tonearm: its angle decides playback. Needle on the record = playing, back on the rest = paused ----
+   Geometry in units of the deck size s: pivot (.93,.14), arm length .6, record centre (.5,.5).
+   Arm angle a: the needle points (IMG_A + a) degrees left of straight down. */
+const arm=document.getElementById('arm'),PIV=[.93,.14],ARM_L=.6,REC=[.5,.5],REC_R=.398,LABEL_R=.132,IMG_A=43.5;
+const REST=-42,DROP=-27;   // resting angle and where the needle lands at the start of a record
+let armA=REST;
+function needle(a){const t=(IMG_A+a)*Math.PI/180;return [PIV[0]-ARM_L*Math.sin(t),PIV[1]+ARM_L*Math.cos(t)]}
+function onRecord(a){const [x,y]=needle(a),d=Math.hypot(x-REC[0],y-REC[1]);return d<REC_R&&d>LABEL_R}
+function setArm(a){armA=a;arm.style.transform=`rotate(${IMG_A+a}deg)`}   // the drawn arm points straight down at 0deg
+setArm(REST);
+const play=()=>{if(!onRecord(armA))setArm(DROP);audio.play().catch(()=>{})};
+const stop=()=>{audio.pause();setArm(REST)};
+const toggle=()=>audio.paused?play():stop();
+let armDragged=false;
+platter.onclick=()=>{if(armDragged){armDragged=false;return}toggle()};pp.onclick=toggle;
+skip.onclick=()=>{load(ti+1);play()};
+size.onclick=()=>{player.classList.toggle('max');player.classList.toggle('min')};
+// grab the arm anywhere near its line (pivot to needle, plus the counterweight behind the pivot)
+function nearArm(ev){
+  const r=player.getBoundingClientRect(),s=r.height,x=(ev.clientX-r.left)/s,y=(ev.clientY-r.top)/s;
+  const [nx,ny]=needle(armA),dx=nx-PIV[0],dy=ny-PIV[1];
+  const t=Math.max(-.25,Math.min(1,((x-PIV[0])*dx+(y-PIV[1])*dy)/(dx*dx+dy*dy)));
+  return Math.hypot(x-(PIV[0]+t*dx),y-(PIV[1]+t*dy))<.035;
+}
+player.addEventListener('pointermove',ev=>{if(!arm.classList.contains('drag'))player.style.cursor=nearArm(ev)?'grab':''});
+player.addEventListener('pointerdown',ev=>{
+  if(ev.button>0||ev.target.closest('#ctrls')||!nearArm(ev))return;
+  ev.preventDefault();ev.stopPropagation();
+  const r=player.getBoundingClientRect(),s=r.height,cx=r.left+PIV[0]*s,cy=r.top+PIV[1]*s;
+  const a0=Math.atan2(ev.clientY-cy,ev.clientX-cx)*180/Math.PI,start=armA;
+  arm.classList.add('drag');player.style.cursor='grabbing';armDragged=false;
+  const move=m=>{
+    armDragged=true;
+    setArm(Math.max(REST,Math.min(-5,start+Math.atan2(m.clientY-cy,m.clientX-cx)*180/Math.PI-a0)));
+    if(!onRecord(armA)&&!audio.paused)audio.pause();   // lifting the needle off stops the music
+  };
+  const up=()=>{
+    removeEventListener('pointermove',move);removeEventListener('pointerup',up);
+    arm.classList.remove('drag');player.style.cursor='';
+    if(onRecord(armA))audio.play().catch(()=>{});   // needle dropped on the record
+    else stop();                                     // anywhere else: back to the rest
+  };
+  addEventListener('pointermove',move);addEventListener('pointerup',up);
+},true);
+// browsers block sound until the first click, so start on the first click outside the player
+const first=e=>{if(player.contains(e.target)||e.target.closest('#tray,#addSt'))return;if(audio.paused)play();document.removeEventListener('pointerdown',first)};
+document.addEventListener('pointerdown',first);
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&pending){pending=null;document.body.classList.remove('placing')}});
+</script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
